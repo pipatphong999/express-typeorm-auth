@@ -14,13 +14,10 @@ import {
 import { User } from "./user.entity";
 import { AppDataSource } from "../data-source";
 
-@Entity("RefreshTokens")
-export class RefreshToken extends BaseEntity {
+@Entity("AccessTokens")
+export class AccessToken extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
-    token: string;
-
-    @Column()
-    expiryDate: Date;
+    id: string;
 
     @Column()
     userId: string;

@@ -9,6 +9,8 @@ import { ConnectionIsNotSetError, SimpleConsoleLogger } from "typeorm";
 import { AppDataSource } from "../data-source";
 import { AuthRequest } from "../inferfaces";
 import { getRepository } from "typeorm";
+import { AccessToken } from "../entity/accessToken.entity";
+import { verify, TokenExpiredError } from "jsonwebtoken";
 // import { v4 as uuidv4 } from 'uuid';
 
 export class AuthController extends BaseController {
@@ -108,8 +110,18 @@ export class AuthController extends BaseController {
     };
 
     public logout = async (req: AuthRequest, res: Response) => {
-        console.log(req.auth);
-        this.ok(res);
+        try {
+            const token = await AccessToken.findOneBy({ id: req.accessTokenId });
+            if (token) {
+                token.revoke = true;
+                token.save();
+                this.ok(res);
+            } else {
+                this.error(res, new Error("token not found"), 404);
+            }
+        } catch (error) {
+            this.error(res, error);
+        }
     };
 
     private async generateToken(user: User, oldRefreshToken: string = "") {
@@ -117,9 +129,16 @@ export class AuthController extends BaseController {
             if (!user) {
                 return {};
             }
-            const accessToken = sign({ id: user.id }, this.env.JWT_SECRET, {
-                expiresIn: Env.JWT_EXPIRES,
-            });
+            const saveAccessToken = await AccessToken.create({
+                userId: user.id,
+            }).save();
+            const accessToken = sign(
+                { id: user.id, token: saveAccessToken.id },
+                this.env.JWT_SECRET,
+                {
+                    expiresIn: Env.JWT_EXPIRES,
+                }
+            );
 
             let token = { accessToken, refreshToken: "" };
             if (oldRefreshToken) {

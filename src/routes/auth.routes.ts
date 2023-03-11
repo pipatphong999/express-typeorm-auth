@@ -10,7 +10,7 @@ const verifyToken = authMiddleWare.verifyToken;
 
 router.post("/signup", authController.signup);
 router.post("/signin", authController.signin);
-router.post("/logout", verifyToken, authController.logout);
+router.delete("/logout", verifyToken, authController.logout);
 router.post("/refreshToken", authController.refreshToken);
 
 module.exports = router;

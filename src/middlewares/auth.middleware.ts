@@ -4,6 +4,7 @@ import { NextFunction, Request, Response } from "express";
 import { AuthRequest } from "../inferfaces";
 import { SimpleConsoleLogger } from "typeorm";
 import { User } from "../entity/user.entity";
+import { AccessToken } from "../entity/accessToken.entity";
 
 export class AuthMiddleWare extends BaseController {
     public verifyToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -25,12 +26,16 @@ export class AuthMiddleWare extends BaseController {
                         return this.error(res, err);
                     }
                 }
-
+                const acToken = await AccessToken.findOneBy({ id: decoded.token, revoke: false });
+                if (!acToken) {
+                    return this.error(res, new Error("token not found."), 404);
+                }
                 const user = await User.findOneBy({ id: decoded.id });
                 if (!user) {
                     return this.error(res, new Error("user not found."), 404);
                 }
                 req.auth = { ...user };
+                req.accessTokenId = decoded.token;
                 next();
             });
         } catch (error) {

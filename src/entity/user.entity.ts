@@ -10,34 +10,38 @@ import {
     OneToMany,
 } from "typeorm";
 import { AppDataSource } from "../data-source";
-@Entity("users")
+import { RefreshToken } from "./refreshToken.entity";
+@Entity("Users")
 export class User extends BaseEntity {
-    @PrimaryGeneratedColumn("uuid", { name: "id" })
+    @PrimaryGeneratedColumn("uuid")
     id: string;
 
-    @Column({ name: "first_name" })
+    @Column()
     firstName: string;
 
-    @Column({ name: "last_name" })
+    @Column()
     lastName: string;
 
-    @Column({ unique: true, name: "username" })
+    @Column({ unique: true })
     username: string;
 
-    @Column({ unique: true, nullable: true, name: "email" })
+    @Column({ unique: true, nullable: true })
     email: string;
 
-    @Column({ name: "password", select: false })
+    @Column({ select: false })
     password: string;
 
-    @CreateDateColumn({ name: "created_at" })
+    @CreateDateColumn()
     createdAt: Date;
 
-    @UpdateDateColumn({ name: "updated_at" })
+    @UpdateDateColumn()
     updatedAt: Date;
 
-    @DeleteDateColumn({ name: "deleted_at" })
+    @DeleteDateColumn()
     deletedAt: Date;
+
+    @OneToMany((type) => RefreshToken, (refreshToken) => refreshToken.userId)
+    refreshTokens: RefreshToken[];
 
     // @OneToMany(() => RefreshToken, (refreshToken) => refreshToken.userId)
     // refreshTokens: RefreshToken[];
